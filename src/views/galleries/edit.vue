@@ -1,88 +1,30 @@
 <template>
   <div class="container py-4">
     <b-card>
-      <h5 class="mb-3">ویرایش مقاله</h5>
+      <h5 class="mb-3">ویرایش گالری</h5>
       <b-form @submit.prevent="handleSubmit">
         <b-row>
-          <!-- Title -->
-          <b-col cols="12" md="6">
+          <b-col cols="12" md="12">
             <b-form-group label="عنوان" label-for="title">
-              <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null" />
-              <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <!-- Slug -->
-          <b-col cols="12" md="6">
-            <b-form-group label="Slug" label-for="slug">
-              <b-form-input id="slug" v-model="form.slug" :state="errors.slug ? false : null" />
-              <small v-if="errors.slug" class="text-danger">{{ errors.slug[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <b-col cols="12" md="6">
-            <b-form-group label="دسته‌بندی " label-for="category_ids">
-              <Treeselect v-if="parentOptions.length" id="category_ids" :multiple="true" v-model="form.category_ids"
-                :normalizer="normalizer" :options="parentOptions" placeholder="انتخاب دسته‌بندی " :clearable="true" />
-              <b-form-invalid-feedback v-if="errors.category_ids">{{ errors.category_ids[0]
-              }}</b-form-invalid-feedback>
-            </b-form-group>
-          </b-col>
-          <b-col cols="12" md="6">
-            <b-form-group label="زمان مطالعه (دقیقه)" label-for="read_time">
-              <b-form-input id="read_time" v-model="form.read_time" :state="errors.read_time ? false : null" />
-              <small v-if="errors.read_time" class="text-danger">{{ errors.read_time[0] }}</small>
+              <b-form-input id="title" v-model="form.title" :state="!errors.title" placeholder="عنوان گالری" />
+              <b-form-invalid-feedback v-if="errors.title">{{ errors.title[0] }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
           <b-col cols="12" md="12">
-            <b-form-group label="تصویر" label-for="image">
-              <VueFileAgent @update:raw-model-value="imageLoaded" :raw-model-value="oldImage" :maxFiles="1"
-                accept=".pdf,.jpg,.png" theme="grid" deletable sortable>
-              </VueFileAgent>
+            <b-form-group label="تصویر (URL)">
 
-              <small v-if="errors.image" class="text-danger">{{ errors.image[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <b-col cols="12">
-            <b-form-group label="توضیح کوتاه">
-              <b-form-textarea v-model="form.short_description" rows="2" />
-              <b-form-invalid-feedback v-if="errors.short_description">{{ errors.short_description[0]
+              <VueFileAgent @update:rawModelValue="imageDeleted" @select="imagesLoaded"
+                v-model:rawModelValue="oldImages" :multiple="true" accept=".jpg,.png,.pdf" theme="grid" deletable
+                sortable />
+              <b-form-invalid-feedback v-if="errors.image">{{ errors.images[0]
               }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
-
-          <!-- Description (Editor) -->
-          <b-col cols="12">
-            <b-form-group label="توضیح کامل" label-for="description">
-              <Editor v-model="form.description" />
-              <small v-if="errors.description" class="text-danger">{{ errors.description[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <!-- Meta Title -->
-          <b-col cols="12" md="6">
-            <b-form-group label="Meta Title" label-for="meta_title">
-              <b-form-input id="meta_title" v-model="form.meta_title" :state="errors.meta_title ? false : null" />
-              <small v-if="errors.meta_title" class="text-danger">{{ errors.meta_title[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <!-- Meta Description -->
-          <b-col cols="12" md="6">
-            <b-form-group label="Meta Description" label-for="meta_description">
-              <b-form-input id="meta_description" v-model="form.meta_description"
-                :state="errors.meta_description ? false : null" />
-              <small v-if="errors.meta_description" class="text-danger">{{ errors.meta_description[0] }}</small>
-            </b-form-group>
-          </b-col>
-
-          <!-- Read Time -->
-
         </b-row>
 
         <div class="mt-3">
-          <b-button v-if="checkPermission(['article_update'])" type="submit" variant="primary">ویرایش مقاله</b-button>
+          <b-button v-if="checkPermission(['gallery_update'])" type="submit" :disabled="loader" variant="primary">ویرایش
+            گالری</b-button>
         </div>
       </b-form>
     </b-card>
@@ -95,92 +37,79 @@ import axios from 'axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { BForm, BFormGroup, BFormInput, BButton, BCard, BRow, BCol } from 'bootstrap-vue-3'
-import Treeselect from 'vue3-treeselect'
 import 'vue3-treeselect/dist/vue3-treeselect.css'
-import Editor from '@/components/shared/editor.vue';
 import { useRoute } from 'vue-router'
 import { useAdmin } from '@/stores/modules/admin';
+let loader = ref(false);
 const store = useAdmin();
 const checkPermission = store.checkPermission;
 const route = useRoute();
-const oldImage = ref([]);
+const oldImages = ref([]);
 const form = reactive({
   title: '',
-  slug: '',
-  image: [],
-  short_description: '',
-  description: '',
-  meta_title: '',
-  meta_description: '',
-  read_time: '',
-  category_ids: []
-
+  images: [],
 })
-const normalizer = (node) => {
-  // تبدیل کلیدها به فرمت استاندارد کامپوننت
-  return {
-    id: node.id,
-    label: node.title,
-    children: node.children
-  }
-}
+let backupImages = ref();
+let deleted_images = ref([]);
 const errors = reactive({})
-const parentOptions = ref([])
-function getParentOption() {
-  axios.get("/article-categories-by-child").then((res) => {
-    parentOptions.value = res.data.data
-  })
+function imageDeleted(files) {
+  backupImages.value.forEach(
+    (oldimg, index) => {
+      let finded = files.find((newImg) => newImg.id == oldimg.id);
+      if (!finded) {
+        deleted_images.value.push(oldimg.id);
+        backupImages.value.splice(index, 1)
+      }
+    }
+  );
 }
 onMounted(async () => {
   try {
     // GET اطلاعات مقاله
-    const res = await axios.get(`/articles/${route.params.id}`)
-
-    oldImage.value =
-      [{
-        name: res.data.data.image.split('/').pop(),
+    const res = await axios.get(`/galleries/${route.params.id}`)
+    form.title = res.data.data.title;
+    let images = []
+    backupImages.value = res.data.data.images;
+    res.data.data.images.forEach(img => {
+      images.push({
+        name: img.image.split('/').pop(),
         size: 0,
+        id: img.id,
         type: 'image/jpeg',
-        ext: res.data.data.image.split('.').pop(),
-        url: `${baseImageAddress}${res.data.data.image}`,
-      }];
-    let ids = [];
-    res.data.data.categories.forEach((item) => ids.push(item.id))
-    form.category_ids = ids;
-    delete res.data.data.categories;
-    delete res.data.data.author;
-    Object.assign(form, res.data.data);
-    getParentOption()
+        ext: img.image.split('.').pop(),
+        url: `${baseImageAddress}${img.image}`,
+      })
+    });
+    oldImages.value = images;
   } catch (err) {
     console.log(err);
-    toast.error('خطا در دریافت اطلاعات مقاله ❌')
+    toast.error('خطا در دریافت اطلاعات گالری ❌')
   }
 })
-function imageLoaded(files) {
-  if (files.length) {
-    form.image = files[0].file
-  } else {
-    form.image = '';
-  }
+function imagesLoaded(files) {
+  form.images = files.map(f => f.file)
 }
 const handleSubmit = async () => {
+  loader.value = true;
   Object.keys(errors).forEach(k => delete errors[k])
   try {
     const formData = new FormData()
     for (const key in form) {
-      if (key != 'image'&&key != 'category_ids') formData.append(key, form[key])
+      if (key != 'images') formData.append(key, form[key])
     }
     formData.append("_method", "PUT");
-    form.category_ids.forEach((id, index) => {
-      formData.append(`category_ids[]`, id)
+    if (deleted_images.value.length) {
+      deleted_images.value.forEach(id => {
+        formData.append("removed_image_ids[]", id)
+      })
+    };
+    form.images.forEach((image, index) => {
+      formData.append(`new_images[]`, image)
     })
-    if (form.image) {
-      formData.append("image", form.image);
-    }
-    await axios.post(`/articles/${route.params.id}`, formData, {
+    await axios.post(`/galleries/${route.params.id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-    toast.success('مقاله با موفقیت ویرایش شد ✅');
+    toast.success('گالری با موفقیت ویرایش شد ✅');
   } catch (err) {
     if (err.response?.status === 422) {
       Object.assign(errors, err.response.data.errors)
@@ -188,6 +117,8 @@ const handleSubmit = async () => {
     } else {
       toast.error('خطا در ارسال اطلاعات ❌')
     }
+  } finally {
+    loader.value = false;
   }
 }
 </script>

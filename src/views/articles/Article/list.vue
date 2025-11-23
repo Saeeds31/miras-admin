@@ -117,7 +117,7 @@ const deleteArticle = (id) => {
       try {
         await axios.delete(`/articles/${id}`);
         Swal.fire("موفق", "مقاله حذف شد", "success");
-        getArticles();
+        getArticles(currentUrl);
       } catch (err) {
         Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
       }

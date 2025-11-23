@@ -26,7 +26,7 @@
                                 :normalizer="normalizer" :options="parentOptions" placeholder="انتخاب دسته‌بندی "
                                 :clearable="true" :valueConsistsOf="'ALL'" />
                             <b-form-invalid-feedback v-if="errors.category_ids">{{ errors.category_ids[0]
-                                }}</b-form-invalid-feedback>
+                            }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -36,7 +36,7 @@
                                 :normalizer="normalizerCity" :options="cities" placeholder="انتخاب شهر "
                                 :clearable="true" :valueConsistsOf="'ALL'" />
                             <b-form-invalid-feedback v-if="errors.city_id">{{ errors.city_id[0]
-                                }}</b-form-invalid-feedback>
+                            }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -46,16 +46,16 @@
                                 :normalizer="normalizerGallery" :options="galleries" placeholder="انتخاب گالری "
                                 :clearable="true" :valueConsistsOf="'ALL'" />
                             <b-form-invalid-feedback v-if="errors.gallery_id">{{ errors.gallery_id[0]
-                                }}</b-form-invalid-feedback>
+                            }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
                     <!-- Read Time -->
                     <b-col cols="12" md="6">
                         <b-form-group label="مدت زمان مطالعه ">
-                            <b-form-input v-model="form.read_time" :state="!errors.read_time" placeholder="مثال: 5" />
+                            <b-form-input type="number" v-model="form.read_time" :state="!errors.read_time" placeholder="مثال: 5" />
                             <b-form-invalid-feedback v-if="errors.read_time">{{ errors.read_time[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -73,7 +73,7 @@
                             <b-form-textarea v-model="form.short_description" :state="!errors.short_description"
                                 rows="2" />
                             <b-form-invalid-feedback v-if="errors.short_description">{{ errors.short_description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -82,7 +82,7 @@
                         <b-form-group label="توضیحات کامل">
                             <Editor v-model="form.description" />
                             <b-form-invalid-feedback v-if="errors.description">{{ errors.description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -91,7 +91,7 @@
                         <b-form-group label="Meta Title">
                             <b-form-input v-model="form.meta_title" :state="!errors.meta_title" />
                             <b-form-invalid-feedback v-if="errors.meta_title">{{ errors.meta_title[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
@@ -100,14 +100,15 @@
                         <b-form-group label="Meta Description">
                             <b-form-input v-model="form.meta_description" :state="!errors.meta_description" />
                             <b-form-invalid-feedback v-if="errors.meta_description">{{ errors.meta_description[0]
-                            }}</b-form-invalid-feedback>
+                                }}</b-form-invalid-feedback>
                         </b-form-group>
                     </b-col>
 
                 </b-row>
 
                 <div class="mt-3">
-                    <b-button v-if="checkPermission(['article_store'])" type="submit" variant="primary">ذخیره</b-button>
+                    <b-button v-if="checkPermission(['article_store'])" :disabled="loader" type="submit"
+                        variant="primary">ذخیره</b-button>
                 </div>
             </b-form>
         </b-card>
@@ -125,6 +126,7 @@ import 'vue3-treeselect/dist/vue3-treeselect.css'
 import Editor from '@/components/shared/editor.vue';
 import { useAdmin } from '@/stores/modules/admin';
 const store = useAdmin();
+let loader = ref(false);
 const checkPermission = store.checkPermission;
 const form = reactive({
     title: '',
@@ -179,7 +181,7 @@ function getParentOption() {
 }
 getParentOption()
 const submitForm = async () => {
-
+    loader.value = true;
     Object.keys(errors).forEach(key => delete errors[key])
     try {
         const formData = new FormData()
@@ -200,6 +202,9 @@ const submitForm = async () => {
         } else {
             toast.error('خطا در ارسال اطلاعات ❌')
         }
+    } finally {
+        loader.value = false;
+
     }
 }
 </script>

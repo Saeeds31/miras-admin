@@ -4,36 +4,55 @@
       <h5 class="mb-3">ویرایش مقاله</h5>
       <b-form @submit.prevent="handleSubmit">
         <b-row>
-          <!-- Title -->
           <b-col cols="12" md="6">
             <b-form-group label="عنوان" label-for="title">
-              <b-form-input id="title" v-model="form.title" :state="errors.title ? false : null" />
-              <small v-if="errors.title" class="text-danger">{{ errors.title[0] }}</small>
+              <b-form-input id="title" v-model="form.title" :state="!errors.title" placeholder="عنوان مقاله" />
+              <b-form-invalid-feedback v-if="errors.title">{{ errors.title[0] }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
 
-          <!-- Slug -->
           <b-col cols="12" md="6">
             <b-form-group label="Slug" label-for="slug">
-              <b-form-input id="slug" v-model="form.slug" :state="errors.slug ? false : null" />
-              <small v-if="errors.slug" class="text-danger">{{ errors.slug[0] }}</small>
+              <b-form-input id="slug" v-model="form.slug" :state="!errors.slug" placeholder="slug مقاله" />
+              <b-form-invalid-feedback v-if="errors.slug">{{ errors.slug[0] }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
-
-          <b-col cols="12" md="6">
+          <b-col cols="12" v-if="parentOptions" md="6">
             <b-form-group label="دسته‌بندی " label-for="category_ids">
-              <Treeselect v-if="parentOptions.length" id="category_ids" :multiple="true" v-model="form.category_ids"
-                :normalizer="normalizer" :options="parentOptions" placeholder="انتخاب دسته‌بندی " :clearable="true" />
+              <Treeselect id="category_ids" :multiple="true" v-model="form.category_ids" :normalizer="normalizer"
+                :options="parentOptions" placeholder="انتخاب دسته‌بندی " :clearable="true" :valueConsistsOf="'ALL'" />
               <b-form-invalid-feedback v-if="errors.category_ids">{{ errors.category_ids[0]
               }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
-          <b-col cols="12" md="6">
-            <b-form-group label="زمان مطالعه (دقیقه)" label-for="read_time">
-              <b-form-input id="read_time" v-model="form.read_time" :state="errors.read_time ? false : null" />
-              <small v-if="errors.read_time" class="text-danger">{{ errors.read_time[0] }}</small>
+
+          <b-col cols="12" v-if="cities" md="6">
+            <b-form-group label="مرتبط به شهر " label-for="city_id">
+              <Treeselect id="city_id" :multiple="false" v-model="form.city_id" :normalizer="normalizerCity"
+                :options="cities" placeholder="انتخاب شهر " :clearable="true" :valueConsistsOf="'ALL'" />
+              <b-form-invalid-feedback v-if="errors.city_id">{{ errors.city_id[0]
+              }}</b-form-invalid-feedback>
             </b-form-group>
           </b-col>
+
+          <b-col cols="12" v-if="galleries" md="6">
+            <b-form-group label="مرتبط به گالری " label-for="gallery_id">
+              <Treeselect id="gallery_id" :multiple="false" v-model="form.gallery_id" :normalizer="normalizerGallery"
+                :options="galleries" placeholder="انتخاب گالری " :clearable="true" :valueConsistsOf="'ALL'" />
+              <b-form-invalid-feedback v-if="errors.gallery_id">{{ errors.gallery_id[0]
+              }}</b-form-invalid-feedback>
+            </b-form-group>
+          </b-col>
+
+          <!-- Read Time -->
+          <b-col cols="12" md="6">
+            <b-form-group label="مدت زمان مطالعه ">
+              <b-form-input type="number" v-model="form.read_time" :state="!errors.read_time" placeholder="مثال: 5" />
+              <b-form-invalid-feedback v-if="errors.read_time">{{ errors.read_time[0]
+              }}</b-form-invalid-feedback>
+            </b-form-group>
+          </b-col>
+
           <b-col cols="12" md="12">
             <b-form-group label="تصویر" label-for="image">
               <VueFileAgent @update:raw-model-value="imageLoaded" :raw-model-value="oldImage" :maxFiles="1"
@@ -82,7 +101,8 @@
         </b-row>
 
         <div class="mt-3">
-          <b-button v-if="checkPermission(['article_update'])" type="submit" variant="primary">ویرایش مقاله</b-button>
+          <b-button :disabled="loader" v-if="checkPermission(['article_update'])" type="submit" variant="primary">ویرایش
+            مقاله</b-button>
         </div>
       </b-form>
     </b-card>
@@ -101,18 +121,21 @@ import Editor from '@/components/shared/editor.vue';
 import { useRoute } from 'vue-router'
 import { useAdmin } from '@/stores/modules/admin';
 const store = useAdmin();
+let loader = ref(false);
 const checkPermission = store.checkPermission;
 const route = useRoute();
 const oldImage = ref([]);
 const form = reactive({
   title: '',
   slug: '',
-  image: [],
   short_description: '',
   description: '',
   meta_title: '',
   meta_description: '',
   read_time: '',
+  image: [],
+  city_id: null,
+  gallery_id: null,
   category_ids: []
 
 })
@@ -125,10 +148,30 @@ const normalizer = (node) => {
   }
 }
 const errors = reactive({})
-const parentOptions = ref([])
+const parentOptions = ref(null)
+const cities = ref(null)
+const galleries = ref(null)
+const normalizerCity = (node) => {
+  return {
+    id: node.id,
+    label: node.name,
+  }
+}
+const normalizerGallery = (node) => {
+  return {
+    id: node.id,
+    label: node.title,
+  }
+}
 function getParentOption() {
   axios.get("/article-categories-by-child").then((res) => {
     parentOptions.value = res.data.data
+  })
+  axios.get('/all-cities').then((res) => {
+    cities.value = res.data.data
+  })
+  axios.get('/all-galleries').then((res) => {
+    galleries.value = res.data.data
   })
 }
 onMounted(async () => {
@@ -149,7 +192,18 @@ onMounted(async () => {
     form.category_ids = ids;
     delete res.data.data.categories;
     delete res.data.data.author;
-    Object.assign(form, res.data.data);
+    Object.assign(form, {
+      title: res.data.data.title,
+      slug: res.data.data.slug,
+      short_description: res.data.data.short_description,
+      description: res.data.data.description,
+      meta_title: res.data.data.meta_title,
+      meta_description: res.data.data.meta_description,
+      read_time: res.data.data.read_time,
+      image: [],
+      city_id: res.data.data.city_id,
+      gallery_id: res.data.data.gallery_id,
+    });
     getParentOption()
   } catch (err) {
     console.log(err);
@@ -164,11 +218,12 @@ function imageLoaded(files) {
   }
 }
 const handleSubmit = async () => {
+  loader.value = true;
   Object.keys(errors).forEach(k => delete errors[k])
   try {
     const formData = new FormData()
     for (const key in form) {
-      if (key != 'image'&&key != 'category_ids') formData.append(key, form[key])
+      if (key != 'image' && key != 'category_ids') formData.append(key, form[key] ?? '')
     }
     formData.append("_method", "PUT");
     form.category_ids.forEach((id, index) => {
@@ -188,6 +243,8 @@ const handleSubmit = async () => {
     } else {
       toast.error('خطا در ارسال اطلاعات ❌')
     }
+  } finally {
+    loader.value = false;
   }
 }
 </script>

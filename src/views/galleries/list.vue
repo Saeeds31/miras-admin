@@ -42,7 +42,7 @@
                 <th>عملیات</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody v-if="Galleries">
               <tr v-for="gallery in Galleries" :key="gallery.id">
                 <td>{{ gallery.id }}</td>
                 <td>{{ gallery.title }}</td>
@@ -72,7 +72,7 @@ import Swal from "sweetalert2";
 import { useAdmin } from '@/stores/modules/admin';
 const store = useAdmin();
 const checkPermission = store.checkPermission;
-const Galleries = ref({ data: [], meta: null });
+const Galleries = ref(null);
 const loading = ref(false);
 const filters = ref({ title: "" });
 let currentUrl = "/galleries";
@@ -81,7 +81,7 @@ async function getGalleries(url) {
   try {
     const { data } = await axios.get(url, { params: filters.value });
     Galleries.value = data.data;
-    
+
   } catch (err) {
     console.error(err);
   } finally {
@@ -89,10 +89,6 @@ async function getGalleries(url) {
   }
 };
 
-const changePage = (page) => {
-  if (page) getGalleries(`${currentUrl}?page=${page}`);
-  else currentUrl = "/galleries"
-};
 
 const deletegallery = (id) => {
   Swal.fire({
@@ -107,7 +103,7 @@ const deletegallery = (id) => {
       try {
         await axios.delete(`/galleries/${id}`);
         Swal.fire("موفق", "گالری حذف شد", "success");
-        getGalleries();
+        getGalleries(currentUrl);
       } catch (err) {
         Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
       }
