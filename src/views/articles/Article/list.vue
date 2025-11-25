@@ -39,7 +39,8 @@
               <tr>
                 <th>شناسه</th>
                 <th>عنوان</th>
-                <th>اسلاگ</th>
+                <th>نمایش در صفحه اصلی</th>
+                <th>جز خبر</th>
                 <th>مدت زمان مطالعه</th>
                 <th>عملیات</th>
               </tr>
@@ -48,7 +49,8 @@
               <tr v-for="article in articles.data" :key="article.id">
                 <td>{{ article.id }}</td>
                 <td>{{ article.title }}</td>
-                <td>{{ article.slug }}</td>
+                <td>{{ article.home_page ? "فعال" : "غیرفعال" }}</td>
+                <td>{{ article.is_news ? "بله" : "-" }}</td>
                 <td>{{ article.read_time }} </td>
                 <td>
                   <router-link v-if="checkPermission(['article_update'])" :to="`/articles/${article.id}/edit`"

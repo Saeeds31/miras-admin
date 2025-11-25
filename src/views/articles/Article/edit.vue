@@ -96,7 +96,24 @@
             </b-form-group>
           </b-col>
 
-          <!-- Read Time -->
+          <b-col cols="12" md="6">
+            <b-form-group label="ثبت در بخش اخبار" label-for="is_news">
+              <b-form-checkbox id="is_news" v-model="form.is_news" :state="errors.is_news ? false : null"
+                :true-value="1" :false-value="0">
+                فعال
+              </b-form-checkbox>
+              <small v-if="errors.is_news" class="text-danger">{{ errors.is_news[0] }}</small>
+            </b-form-group>
+          </b-col>
+          <b-col cols="12" md="6">
+            <b-form-group label="مشاهده در صفحه اصلی" label-for="home_page">
+              <b-form-checkbox id="home_page" v-model="form.home_page" :state="errors.home_page ? false : null"
+                :true-value="1" :false-value="0">
+                فعال
+              </b-form-checkbox>
+              <small v-if="errors.home_page" class="text-danger">{{ errors.home_page[0] }}</small>
+            </b-form-group>
+          </b-col>
 
         </b-row>
 
@@ -136,6 +153,8 @@ const form = reactive({
   image: [],
   city_id: null,
   gallery_id: null,
+  is_news: false,
+  home_page: false,
   category_ids: []
 
 })
@@ -200,6 +219,8 @@ onMounted(async () => {
       meta_title: res.data.data.meta_title,
       meta_description: res.data.data.meta_description,
       read_time: res.data.data.read_time,
+      is_news: res.data.data.is_news,
+      home_page: res.data.data.home_page,
       image: [],
       city_id: res.data.data.city_id,
       gallery_id: res.data.data.gallery_id,
@@ -223,7 +244,8 @@ const handleSubmit = async () => {
   try {
     const formData = new FormData()
     for (const key in form) {
-      if (key != 'image' && key != 'category_ids') formData.append(key, form[key] ?? '')
+      if (key == 'is_news' || key == 'home_page') formData.append(key, Number(form[key]));
+      else if (key != 'image' && key != 'category_ids') formData.append(key, form[key] ?? '')
     }
     formData.append("_method", "PUT");
     form.category_ids.forEach((id, index) => {
