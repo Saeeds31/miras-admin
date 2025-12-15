@@ -18,8 +18,8 @@ import Vue3PersianDatetimePicker from "vue3-persian-datetime-picker";
 import "@boindil/vue-file-agent-next/dist/vue-file-agent-next.css"; // برای استایل‌ها
 // local=http://127.0.0.1:8000
 // porduction=https://api.mirasgolestan.ir
-axios.defaults.baseURL = "https://api.mirasgolestan.ir/api/v1/admin";
-window.baseImageAddress = "https://api.mirasgolestan.ir/public/uploads/";
+axios.defaults.baseURL = "https://api.mirasgolestan.com/api/v1/admin";
+window.baseImageAddress = "https://api.mirasgolestan.com/public/uploads/";
 const app = createApp(App);
 // app.use(CKEditor)
 app.use(Vue3Toastify, {

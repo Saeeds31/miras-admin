@@ -14,7 +14,12 @@
           <b-form-input id="slug" v-model="form.slug" :state="!errors.slug" placeholder="slug دسته‌بندی"></b-form-input>
           <b-form-invalid-feedback v-if="errors.slug">{{ errors.slug }}</b-form-invalid-feedback>
         </b-form-group>
-
+        <b-col cols="12" md="12">
+          <b-form-group label="تصویر (URL)">
+            <VueFileAgent @select="imageLoaded" :maxFiles="1" accept=".pdf,.jpg,.png" theme="grid" deletable sortable />
+            <b-form-invalid-feedback v-if="errors.image">{{ errors.image[0] }}</b-form-invalid-feedback>
+          </b-form-group>
+        </b-col>
         <!-- Parent -->
         <b-form-group label="دسته‌بندی والد" label-for="parent_id" class="col-md-6">
 
@@ -65,6 +70,7 @@ const form = reactive({
   title: '',
   slug: '',
   parent_id: null,
+  image: '',
   meta_title: '',
   meta_description: '',
   description: '',
@@ -78,6 +84,9 @@ const normalizer = (node) => {
     label: node.title,
     children: node.children
   }
+}
+function imageLoaded(files) {
+    form.image = files[0].file
 }
 const parentOptions = ref([])
 function getParentOption() {
