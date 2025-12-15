@@ -73,13 +73,13 @@ const routes = [
     name: "users-roles-edit",
     component: () => import("@/views/users/Role/edit.vue"),
   },
-  
+
   {
     path: "/settings",
     name: "settings",
     component: () => import("@/views/settings/index.vue"),
   },
-  
+
   {
     path: "/content/sliders",
     name: "content-sliders",
@@ -147,7 +147,7 @@ const routes = [
     name: "articles-edit",
     component: () => import("@/views/articles/Article/edit.vue"),
   },
-  
+
   {
     path: "/galleries/list",
     name: "galleries-list",
@@ -184,29 +184,29 @@ const routes = [
     name: "reports-users",
     component: () => import("@/views/reports/Users.vue"),
   },
- 
+
   {
     path: "/comments/articles",
     name: "comments-articles",
     component: () => import("@/views/comments/Articles.vue"),
   },
-  {
-    path: "/location/provinces/list",
-    name: "location-province-list",
-    component: () => import("@/views/location/Province/list.vue"),
-  },
+  // {
+  //   path: "/location/provinces/list",
+  //   name: "location-province-list",
+  //   component: () => import("@/views/location/Province/list.vue"),
+  // },
 
-  {
-    path: "/location/provinces/create",
-    name: "location-province-create",
-    component: () => import("@/views/location/Province/create.vue"),
-  },
+  // {
+  //   path: "/location/provinces/create",
+  //   name: "location-province-create",
+  //   component: () => import("@/views/location/Province/create.vue"),
+  // },
 
-  {
-    path: "/location/provinces/:id/edit",
-    name: "location-province-edit",
-    component: () => import("@/views/location/Province/edit.vue"),
-  },
+  // {
+  //   path: "/location/provinces/:id/edit",
+  //   name: "location-province-edit",
+  //   component: () => import("@/views/location/Province/edit.vue"),
+  // },
   {
     path: "/location/cities/list",
     name: "location-cities-list",
@@ -225,8 +225,6 @@ const routes = [
     component: () => import("@/views/location/City/edit.vue"),
   },
 
- 
-  
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];
 const router = createRouter({

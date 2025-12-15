@@ -105,7 +105,7 @@ const deletegallery = (id) => {
         Swal.fire("موفق", "گالری حذف شد", "success");
         getGalleries(currentUrl);
       } catch (err) {
-        Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
+        Swal.fire("خطا", "برای این گالری مقاله ثبت شده و قابل حذف نیست", "error");
       }
     }
   });

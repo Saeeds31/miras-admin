@@ -102,7 +102,7 @@ const menuItems = [
     permissions: ['city_view', 'province_view'],
     icon: "bi-geo-alt",
     children: [
-      { name: "استان‌ها", link: "/location/provinces/list", permissions: ['province_view'], icon: "bi-map" },
+      // { name: "استان‌ها",  link: "/location/provinces/list", permissions: ['province_view'], icon: "bi-map" },
       { name: "شهرها", link: "/location/cities/list", permissions: ['city_view'], icon: "bi-map-fill" },
     ],
   },

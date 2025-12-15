@@ -90,7 +90,7 @@ const deleteCategory = async (id) => {
         fetchCategories(currentPage.value)
     } catch (error) {
         console.error(error)
-        Swal.fire('Error!', 'Failed to delete category.', 'error')
+        Swal.fire('Error!', 'این دسته بندی در مقاله ای استفاده شده و قابل حذف نیست', 'error')
     }
 }
 

@@ -133,7 +133,7 @@ const deleteCity = (id) => {
         Swal.fire("موفق", "شهر حذف شد", "success");
         getCities();
       } catch (err) {
-        Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
+        Swal.fire("خطا", "این شهر مقاله ایی دارد و قابل حذف نیست", "error");
       }
     }
   });

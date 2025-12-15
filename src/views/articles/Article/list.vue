@@ -121,7 +121,7 @@ const deleteArticle = (id) => {
         Swal.fire("موفق", "مقاله حذف شد", "success");
         getArticles(currentUrl);
       } catch (err) {
-        Swal.fire("خطا", "مشکلی در حذف پیش آمد", "error");
+        Swal.fire("خطا", "این مقاله دارای کامنت است و قابل حذف نیست", "error");
       }
     }
   });

@@ -19,7 +19,15 @@
               <small v-if="errors.slug" class="text-danger">{{ errors.slug[0] }}</small>
             </b-form-group>
           </b-col>
+          <b-col cols="12" md="12">
+            <b-form-group label="تصویر" label-for="image">
+              <VueFileAgent @update:raw-model-value="imageLoaded" :raw-model-value="oldImage" :maxFiles="1"
+                accept=".pdf,.jpg,.png" theme="grid" deletable sortable>
+              </VueFileAgent>
 
+              <small v-if="errors.image" class="text-danger">{{ errors.image[0] }}</small>
+            </b-form-group>
+          </b-col>
           <!-- Parent Category (Treeselect) -->
           <b-col cols="12" md="6">
             <b-form-group label="دسته‌بندی والد" label-for="parent_id">
@@ -83,14 +91,22 @@ const form = reactive({
   title: '',
   slug: '',
   parent_id: null,
+  image: [],
   meta_title: '',
   meta_description: '',
   description: '',
 })
+const oldImage = ref([]);
 
 const errors = reactive({})
 const categories = ref([])
-
+function imageLoaded(files) {
+  if (files.length) {
+    form.image = files[0].file
+  } else {
+    form.image = '';
+  }
+}
 onMounted(async () => {
   try {
     // GET اطلاعات دسته‌بندی
@@ -99,6 +115,16 @@ onMounted(async () => {
     // GET لیست دسته‌بندی‌ها برای Treeselect
     const categoriesRes = await axios.get('/article-categories-by-child')
     categories.value = categoriesRes.data.data.map(c => ({ id: c.id, label: c.title }))
+    if (categoriesRes.data.data.image) {
+      oldImage.value =
+        [{
+          name: categoriesRes.data.data.image.split('/').pop(),
+          size: 0,
+          type: 'image/jpeg',
+          ext: categoriesRes.data.data.image.split('.').pop(),
+          url: `${baseImageAddress}${categoriesRes.data.data.image}`,
+        }];
+    }
   } catch (err) {
     toast.error('خطا در دریافت اطلاعات دسته‌بندی ❌')
   }
@@ -108,8 +134,14 @@ const handleSubmit = async () => {
   Object.keys(errors).forEach(k => delete errors[k])
   try {
     const formData = new FormData()
-    for (const key in form) formData.append(key, form[key])
-
+    for (const key in form) {
+      if (key != 'image') {
+        formData.append(key, form[key])
+      }
+    }
+    if (form.image) {
+      formData.append("image", form.image);
+    }
     await axios.post(`/article-categories/${route.params.id}`, formData)
     toast.success('دسته‌بندی با موفقیت ویرایش شد ✅')
   } catch (err) {
