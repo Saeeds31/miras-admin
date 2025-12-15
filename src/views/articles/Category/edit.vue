@@ -134,13 +134,18 @@ const handleSubmit = async () => {
   Object.keys(errors).forEach(k => delete errors[k])
   try {
     const formData = new FormData()
+    formData.append("_method", "PUT");
+
     for (const key in form) {
-      if (key != 'image') {
+      if (key != 'image' && key != 'parent_id') {
         formData.append(key, form[key])
       }
     }
     if (form.image) {
       formData.append("image", form.image);
+    }
+    if (form.parent_id && form.parent_id != route.params.id) {
+      formData.append("parent_id", form.parent_id);
     }
     await axios.post(`/article-categories/${route.params.id}`, formData)
     toast.success('دسته‌بندی با موفقیت ویرایش شد ✅')
